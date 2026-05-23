@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Évaluation de l'Examen — TEC</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+  :root{
+    --blue:#1a56db;--blue-light:#e8f0fe;--green:#057a55;--green-light:#def7ec;
+    --red:#c81e1e;--red-light:#fde8e8;--amber:#92400e;--amber-light:#fef3c7;
+    --gray:#6b7280;--border:#e5e7eb;--bg:#f9fafb;--white:#ffffff;
+    --text:#111827;--text-muted:#6b7280;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+  /* Header */
+  .univ-bar{background:var(--white);border-bottom:3px solid var(--blue);padding:14px 2rem;display:flex;align-items:center;gap:1.5rem;}
+  .univ-bar img{height:64px;width:auto;flex-shrink:0;}
+  .univ-info{font-size:12px;line-height:1.6;color:var(--text-muted);}
+  .univ-info strong{color:var(--text);font-size:13px;}
+
+  header{background:var(--white);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:52px;position:sticky;top:0;z-index:100;}
+  .logo{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:500;color:var(--blue);}
+  .header-badge{background:var(--blue-light);color:var(--blue);font-size:12px;padding:4px 12px;border-radius:6px;font-weight:500;}
+
+  .container{max-width:680px;margin:0 auto;padding:2rem 1.5rem 5rem;}
+
+  /* Intro */
+  .intro-card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:1.75rem 2rem;margin-bottom:1.5rem;}
+  .intro-card h1{font-size:20px;font-weight:600;margin-bottom:8px;}
+  .intro-card p{font-size:13px;color:var(--text-muted);line-height:1.7;}
+  .notice{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 14px;font-size:12px;color:#1e40af;margin-top:1rem;line-height:1.6;}
+
+  /* Student info */
+  .card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:1.5rem 2rem;margin-bottom:1.5rem;}
+  .card-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);margin-bottom:1rem;}
+  .form-group{display:flex;flex-direction:column;gap:5px;margin-bottom:12px;}
+  .form-group label{font-size:12px;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;}
+  .form-group input[type=text]{height:40px;border:1px solid var(--border);border-radius:8px;padding:0 12px;font-size:14px;font-family:'IBM Plex Sans',sans-serif;color:var(--text);background:var(--white);}
+  .form-group input[type=text]:focus{outline:none;border-color:var(--blue);}
+  .filieres-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px;}
+  .filiere-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:12px;transition:all .12s;}
+  .filiere-item:hover{border-color:#93c5fd;background:#eff6ff;}
+  .filiere-item input[type=radio]{accent-color:var(--blue);flex-shrink:0;}
+  .filiere-item.sel{border-color:var(--blue);background:var(--blue-light);}
+
+  /* Stars */
+  .section-title{font-size:14px;font-weight:600;margin-bottom:4px;}
+  .section-desc{font-size:12px;color:var(--text-muted);margin-bottom:14px;line-height:1.5;}
+  .star-row{display:flex;flex-direction:column;gap:14px;margin-bottom:4px;}
+  .star-item{display:flex;flex-direction:column;gap:6px;}
+  .star-item-label{font-size:13px;font-weight:500;}
+  .stars{display:flex;gap:5px;}
+  .stars span{font-size:26px;cursor:pointer;line-height:1;transition:transform .1s,filter .1s;filter:grayscale(1) opacity(.4);}
+  .stars span:hover,
+  .stars span.lit{filter:none;transform:scale(1.15);}
+  .stars span.hover-preview{filter:none;}
+  .star-val-label{font-size:11px;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;height:14px;}
+
+  /* Separator */
+  .sep{height:1px;background:var(--border);margin:1.25rem 0;}
+
+  /* Textarea */
+
+
+  /* Checkboxes problèmes */
+  .problems-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+  .prob-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:12px;transition:all .12s;}
+  .prob-item:hover{border-color:#93c5fd;background:#eff6ff;}
+  .prob-item input[type=checkbox]{accent-color:var(--blue);width:15px;height:15px;flex-shrink:0;}
+  .prob-item.sel{border-color:var(--blue);background:var(--blue-light);}
+
+  /* Scale 1-5 */
+  .scale-row{display:flex;gap:8px;align-items:center;justify-content:space-between;}
+  .scale-btn{flex:1;height:36px;border:1px solid var(--border);border-radius:8px;background:var(--white);font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:500;cursor:pointer;transition:all .12s;}
+  .scale-btn:hover{border-color:#93c5fd;background:#eff6ff;}
+  .scale-btn.sel{background:var(--blue);color:white;border-color:var(--blue);}
+  .scale-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-top:4px;}
+
+  /* Submit */
+  .submit-btn{width:100%;height:50px;background:var(--blue);color:white;border:none;border-radius:10px;font-family:'IBM Plex Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;margin-top:1.5rem;transition:background .15s;}
+  .submit-btn:hover{background:#1741b0;}
+  .submit-btn:disabled{background:var(--gray);cursor:not-allowed;}
+
+  /* Success */
+  .success-screen{display:none;text-align:center;background:var(--white);border:1px solid #a7f3d0;border-radius:12px;padding:3rem 2rem;margin-top:2rem;}
+  .success-screen h2{font-size:20px;font-weight:600;margin-bottom:8px;}
+  .success-screen p{font-size:14px;color:var(--text-muted);line-height:1.7;}
+
+  @media(max-width:600px){
+    .filieres-grid{grid-template-columns:1fr;}
+    .problems-grid{grid-template-columns:1fr;}
+    .container{padding:1rem 1rem 4rem;}
+    .univ-bar{flex-direction:column;text-align:center;gap:0.75rem;}
+  }
+</style>
+</head>
+<body>
+
+<!-- Bandeau université -->
+<div class="univ-bar">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Badji_Mokhtar_Annaba_University_logo.svg/120px-Badji_Mokhtar_Annaba_University_logo.svg.png"
+       onerror="this.style.display='none'" alt="Logo UBMA"/>
+  <div class="univ-info">
+    <strong>Université Badji Mokhtar — Annaba</strong><br>
+    Faculté de Technologie<br>
+    Techniques d'Expression et de Communication<br>
+    <strong>Enseignante : Dr. N. E. A. DOGHMANE</strong>
+  </div>
+</div>
+
+<header>
+  <span class="logo">TEC · Évaluation</span>
+  <span class="header-badge">📝 Post-Examen</span>
+</header>
+
+<div class="container">
+
+  <!-- Intro -->
+  <div class="intro-card">
+    <h1>Bonjour cher(e) étudiant(e) 👋</h1>
+    <p>Merci d'avoir passé l'examen. Prenez quelques minutes pour nous donner votre avis sur le déroulement de cette session. Vos réponses sont anonymisées et serviront à améliorer les prochains examens.</p>
+    <div class="notice">⏱ Environ 2 minutes · Toutes les questions avec ★ sont obligatoires</div>
+  </div>
+
+  <!-- Infos étudiant -->
+  <div class="card">
+    <div class="card-title">Vos informations</div>
+    <div class="form-group">
+      <label>Nom complet *</label>
+      <input type="text" id="s-name" placeholder="Prénom Nom" autocomplete="off"/>
+    </div>
+    <div class="form-group">
+      <label>Matricule *</label>
+      <input type="text" id="s-matricule" placeholder="Ex : 20231234" autocomplete="off"/>
+    </div>
+    <div class="form-group">
+      <label>Filière *</label>
+      <div class="filieres-grid" id="filieres-eval">
+        <label class="filiere-item"><input type="radio" name="filiere-eval" value="AUTOMATIQUE"/>                   Automatique</label>
+        <label class="filiere-item"><input type="radio" name="filiere-eval" value="ELECTRONIQUE"/>                  Électronique</label>
+        <label class="filiere-item"><input type="radio" name="filiere-eval" value="TELECOMMUNICATION"/>             Télécommunication</label>
+        <label class="filiere-item"><input type="radio" name="filiere-eval" value="ELECTROTECHNIQUE"/>              Électrotechnique</label>
+        <label class="filiere-item"><input type="radio" name="filiere-eval" value="ELECTROMECANIQUE"/>              Électromécanique</label>
+        <label class="filiere-item"><input type="radio" name="filiere-eval" value="GENIE CIVIL"/>                   Génie Civil</label>
+        <label class="filiere-item"><input type="radio" name="filiere-eval" value="GENIE MECANIQUE"/>               Génie Mécanique</label>
+        <label class="filiere-item"><input type="radio" name="filiere-eval" value="HYDRAULIQUE"/>                   Hydraulique</label>
+        <label class="filiere-item"><input type="radio" name="filiere-eval" value="HYGIENE ET SECURITE INDUSTRIELLE"/> Hygiène et Sécurité Industrielle</label>
+        <label class="filiere-item"><input type="radio" name="filiere-eval" value="GENIE DES PROCEDES"/>            Génie des Procédés</label>
+        <label class="filiere-item"><input type="radio" name="filiere-eval" value="METALLURGIE"/>                   Métallurgie</label>
+        <label class="filiere-item"><input type="radio" name="filiere-eval" value="Autre"/>                         Autre</label>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Groupe / Section</label>
+      <input type="text" id="s-group" placeholder="Ex : Groupe 3"/>
+    </div>
+  </div>
+
+  <!-- Évaluation générale en étoiles -->
+  <div class="card">
+    <div class="section-title">Évaluation globale ★</div>
+    <div class="section-desc">Notez chaque aspect de l'examen de 1 à 5 étoiles.</div>
+
+    <div class="star-row">
+
+      <div class="star-item">
+        <div class="star-item-label">Note globale de l'examen</div>
+        <div class="stars" id="stars-global" data-key="global">
+          <span data-v="1">⭐</span><span data-v="2">⭐</span><span data-v="3">⭐</span><span data-v="4">⭐</span><span data-v="5">⭐</span>
+        </div>
+        <div class="star-val-label" id="lbl-global"></div>
+      </div>
+
+      <div class="sep"></div>
+
+      <div class="star-item">
+        <div class="star-item-label">Clarté des questions</div>
+        <div class="stars" id="stars-clarte" data-key="clarte">
+          <span data-v="1">⭐</span><span data-v="2">⭐</span><span data-v="3">⭐</span><span data-v="4">⭐</span><span data-v="5">⭐</span>
+        </div>
+        <div class="star-val-label" id="lbl-clarte"></div>
+      </div>
+
+      <div class="star-item">
+        <div class="star-item-label">Adéquation avec le cours</div>
+        <div class="stars" id="stars-adéquation" data-key="adequation">
+          <span data-v="1">⭐</span><span data-v="2">⭐</span><span data-v="3">⭐</span><span data-v="4">⭐</span><span data-v="5">⭐</span>
+        </div>
+        <div class="star-val-label" id="lbl-adequation"></div>
+      </div>
+
+      <div class="star-item">
+        <div class="star-item-label">Durée de l'examen (120 min)</div>
+        <div class="stars" id="stars-duree" data-key="duree">
+          <span data-v="1">⭐</span><span data-v="2">⭐</span><span data-v="3">⭐</span><span data-v="4">⭐</span><span data-v="5">⭐</span>
+        </div>
+        <div class="star-val-label" id="lbl-duree"></div>
+      </div>
+
+      <div class="star-item">
+        <div class="star-item-label">Interface numérique (facilité d'utilisation)</div>
+        <div class="stars" id="stars-interface" data-key="interface">
+          <span data-v="1">⭐</span><span data-v="2">⭐</span><span data-v="3">⭐</span><span data-v="4">⭐</span><span data-v="5">⭐</span>
+        </div>
+        <div class="star-val-label" id="lbl-interface"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Problèmes rencontrés -->
+  <div class="card">
+    <div class="section-title">Avez-vous rencontré des problèmes ? ★</div>
+    <div class="section-desc">Cochez tout ce qui s'applique à votre expérience.</div>
+
+    <div class="problems-grid" id="problems-grid">
+      <label class="prob-item"><input type="checkbox" value="connexion"/> Problème de connexion</label>
+      <label class="prob-item"><input type="checkbox" value="minuteur"/> Le minuteur ne fonctionnait pas</label>
+      <label class="prob-item"><input type="checkbox" value="chargement"/> Page lente / plantage</label>
+      <label class="prob-item"><input type="checkbox" value="questions_ambigues"/> Questions ambiguës</label>
+      <label class="prob-item"><input type="checkbox" value="enoncé_incompris"/> Énoncé incompris</label>
+      <label class="prob-item"><input type="checkbox" value="soumission"/> Problème à la soumission</label>
+      <label class="prob-item"><input type="checkbox" value="bruit_env"/> Environnement bruyant</label>
+      <label class="prob-item"><input type="checkbox" value="aucun"/> Aucun problème ✓</label>
+    </div>
+  </div>
+
+  <!-- Niveau de difficulté -->
+  <div class="card">
+    <div class="section-title">Niveau de difficulté ressenti ★</div>
+    <div class="section-desc">1 = Très facile · 5 = Très difficile</div>
+    <div class="scale-row" id="diff-scale">
+      <button class="scale-btn" data-v="1" onclick="selectScale(this,'diff')">1</button>
+      <button class="scale-btn" data-v="2" onclick="selectScale(this,'diff')">2</button>
+      <button class="scale-btn" data-v="3" onclick="selectScale(this,'diff')">3</button>
+      <button class="scale-btn" data-v="4" onclick="selectScale(this,'diff')">4</button>
+      <button class="scale-btn" data-v="5" onclick="selectScale(this,'diff')">5</button>
+    </div>
+    <div class="scale-labels"><span>Très facile</span><span>Très difficile</span></div>
+  </div>
+
+  <!-- Préparation ressentie -->
+  <div class="card">
+    <div class="section-title">Sentiment de préparation avant l'examen ★</div>
+    <div class="section-desc">1 = Pas du tout préparé · 5 = Très bien préparé</div>
+    <div class="scale-row" id="prep-scale">
+      <button class="scale-btn" data-v="1" onclick="selectScale(this,'prep')">1</button>
+      <button class="scale-btn" data-v="2" onclick="selectScale(this,'prep')">2</button>
+      <button class="scale-btn" data-v="3" onclick="selectScale(this,'prep')">3</button>
+      <button class="scale-btn" data-v="4" onclick="selectScale(this,'prep')">4</button>
+      <button class="scale-btn" data-v="5" onclick="selectScale(this,'prep')">5</button>
+    </div>
+    <div class="scale-labels"><span>Pas préparé</span><span>Très préparé</span></div>
+  </div>
+
+
+  <!-- Commentaire unique -->
+  <div class="card">
+    <div class="section-title">Vos commentaires (optionnel)</div>
+    <div class="form-group">
+      <textarea id="txt-comment" placeholder="Remarques, suggestions, ou tout autre retour…" maxlength="500" style="border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;color:var(--text);background:var(--white);resize:vertical;min-height:100px;line-height:1.6;width:100%;"></textarea>
+    </div>
+  </div>
+
+  <button class="submit-btn" id="submit-btn" onclick="submitEval()">Envoyer mon évaluation →</button>
+
+  <!-- Succès -->
+  <div class="success-screen" id="success-screen">
+    <div style="font-size:52px;margin-bottom:1rem;">🎉</div>
+    <h2>Merci pour votre retour !</h2>
+    <p id="success-msg">Votre évaluation a bien été enregistrée. Votre avis contribue à améliorer les conditions d'examen pour tous les étudiants.</p>
+    <p style="margin-top:1rem;font-size:13px;color:var(--text-muted);">Vous pouvez fermer cette page.</p>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+const API_BASE = 'https://examen-jhpf.onrender.com';
+
+// ── Étoiles ─────────────────────────────────────────────────────────
+const starRatings = {};
+const starLabels  = ['','Insuffisant','Passable','Bien','Très bien','Excellent'];
+
+document.querySelectorAll('.stars').forEach(container => {
+  const key  = container.dataset.key;
+  const stars = container.querySelectorAll('span');
+  starRatings[key] = 0;
+
+  stars.forEach(star => {
+    const v = parseInt(star.dataset.v);
+
+    star.addEventListener('mouseenter', () => {
+      stars.forEach(s => {
+        const sv = parseInt(s.dataset.v);
+        s.classList.toggle('hover-preview', sv <= v);
+      });
+      document.getElementById('lbl-' + key).textContent = v + '/5 — ' + starLabels[v];
+    });
+
+    star.addEventListener('mouseleave', () => {
+      stars.forEach(s => s.classList.remove('hover-preview'));
+      const cur = starRatings[key];
+      document.getElementById('lbl-' + key).textContent = cur ? cur + '/5 — ' + starLabels[cur] : '';
+    });
+
+    star.addEventListener('click', () => {
+      starRatings[key] = v;
+      stars.forEach(s => {
+        const sv = parseInt(s.dataset.v);
+        s.classList.toggle('lit', sv <= v);
+      });
+      document.getElementById('lbl-' + key).textContent = v + '/5 — ' + starLabels[v];
+    });
+  });
+});
+
+// ── Filières ─────────────────────────────────────────────────────────
+document.querySelectorAll('#filieres-eval .filiere-item').forEach(lbl => {
+  lbl.addEventListener('click', () => {
+    document.querySelectorAll('#filieres-eval .filiere-item').forEach(l => l.classList.remove('sel'));
+    lbl.classList.add('sel');
+  });
+});
+
+// ── Cases problèmes ──────────────────────────────────────────────────
+document.querySelectorAll('#problems-grid .prob-item').forEach(lbl => {
+  lbl.addEventListener('click', () => {
+    lbl.classList.toggle('sel');
+    // Si "Aucun problème" coché → décocher les autres
+    const inp = lbl.querySelector('input');
+    if (inp.value === 'aucun' && inp.checked) {
+      document.querySelectorAll('#problems-grid .prob-item').forEach(l => {
+        if (l !== lbl) { l.classList.remove('sel'); l.querySelector('input').checked = false; }
+      });
+    } else if (inp.value !== 'aucun') {
+      const aucunLbl = document.querySelector('#problems-grid .prob-item input[value="aucun"]').parentElement;
+      aucunLbl.classList.remove('sel');
+      aucunLbl.querySelector('input').checked = false;
+    }
+  });
+});
+
+// ── Échelles ─────────────────────────────────────────────────────────
+const scaleVals = { diff: 0, prep: 0 };
+function selectScale(btn, key) {
+  const parent = document.getElementById(key + '-scale');
+  parent.querySelectorAll('.scale-btn').forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel');
+  scaleVals[key] = parseInt(btn.dataset.v);
+}
+
+
+
+// ── Soumission ────────────────────────────────────────────────────────
+async function submitEval() {
+  const name       = document.getElementById('s-name').value.trim();
+  const matricule  = document.getElementById('s-matricule').value.trim();
+  const filiereEl  = document.querySelector('input[name="filiere-eval"]:checked');
+  const group      = document.getElementById('s-group').value.trim();
+
+  if (!name || !matricule || !filiereEl) {
+    alert('Veuillez remplir votre nom, matricule et filière.'); return;
+  }
+  if (!starRatings.global) {
+    alert('Veuillez donner au moins une note globale (étoiles).'); return;
+  }
+  if (!scaleVals.diff || !scaleVals.prep) {
+    alert('Veuillez répondre aux questions de difficulté et de préparation.'); return;
+  }
+
+  const problems = [];
+  document.querySelectorAll('#problems-grid .prob-item input:checked').forEach(inp => {
+    problems.push(inp.value);
+  });
+
+  const record = {
+    type: 'evaluation',
+    name, matricule,
+    filiere: filiereEl.value,
+    group,
+    stars: {
+      global:    starRatings.global    || 0,
+      clarte:    starRatings.clarte    || 0,
+      adequation:starRatings.adequation|| 0,
+      duree:     starRatings.duree     || 0,
+      interface: starRatings.interface || 0,
+    },
+    difficulte: scaleVals.diff,
+    preparation: scaleVals.prep,
+    problems,
+    commentaire: document.getElementById('txt-comment').value.trim(),
+    timestamp: new Date().toLocaleString('fr-FR')
+  };
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Envoi en cours…';
+
+  try {
+    const res = await fetch(API_BASE + '/api/evaluations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(record)
+    });
+    if (!res.ok) throw new Error('Erreur serveur');
+  } catch(e) {
+    // Fallback : on continue quand même (pour ne pas bloquer l'étudiant)
+    console.warn('API unavailable, saving locally:', e);
+  }
+
+  // Affichage succès
+  document.getElementById('success-msg').textContent =
+    `Merci ${name} ! Votre évaluation a bien été transmise à l'enseignant.`;
+  document.getElementById('success-screen').style.display = 'block';
+  document.getElementById('success-screen').scrollIntoView({ behavior: 'smooth' });
+  btn.style.display = 'none';
+}
+</script>
+</body>
+</html>

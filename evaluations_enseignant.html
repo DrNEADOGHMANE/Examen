@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Évaluations — Espace Enseignant</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+  :root{
+    --blue:#1a56db;--blue-light:#e8f0fe;--green:#057a55;--green-light:#def7ec;
+    --red:#c81e1e;--red-light:#fde8e8;--amber:#92400e;--amber-light:#fef3c7;
+    --gray:#6b7280;--border:#e5e7eb;--bg:#f9fafb;--white:#ffffff;
+    --text:#111827;--text-muted:#6b7280;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+  /* Mot de passe */
+  .pwd-overlay{position:fixed;inset:0;background:#111827;z-index:999;display:flex;align-items:center;justify-content:center;padding:1rem;}
+  .pwd-card{background:var(--white);border-radius:16px;max-width:360px;width:100%;padding:2.5rem 2rem;text-align:center;}
+  .pwd-card h2{font-size:20px;font-weight:600;margin-bottom:6px;}
+  .pwd-card p{font-size:13px;color:var(--text-muted);margin-bottom:1.5rem;}
+  .pwd-input{width:100%;height:44px;border:1.5px solid var(--border);border-radius:10px;padding:0 14px;font-size:16px;font-family:'IBM Plex Mono',monospace;text-align:center;letter-spacing:.1em;margin-bottom:12px;}
+  .pwd-input:focus{outline:none;border-color:var(--amber);}
+  .pwd-input.error{border-color:var(--red);animation:shake .3s ease;}
+  .pwd-btn{width:100%;height:46px;background:var(--amber);color:white;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;}
+  .pwd-error{font-size:12px;color:var(--red);margin-top:8px;display:none;}
+  @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-8px);}75%{transform:translateX(8px);}}
+
+  /* Header */
+  .univ-bar{background:var(--white);border-bottom:3px solid var(--blue);padding:14px 2rem;display:flex;align-items:center;gap:1.5rem;}
+  .univ-bar img{height:64px;width:auto;flex-shrink:0;}
+  .univ-info{font-size:12px;line-height:1.6;}
+  .univ-info .u1{font-size:15px;font-weight:700;color:var(--blue);}
+  .univ-info .u2{font-size:13px;font-weight:600;color:var(--text);}
+  .univ-info .u3{font-size:13px;color:#374151;}
+  .univ-info .u4{font-size:13px;color:var(--text-muted);font-style:italic;}
+
+  header{background:var(--white);border-bottom:1px solid var(--border);padding:0 2rem;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+  .logo{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:500;color:var(--amber);}
+  .badge{background:var(--amber-light);color:var(--amber);font-size:12px;padding:4px 12px;border-radius:6px;font-weight:500;}
+
+  .container{max-width:1050px;margin:0 auto;padding:2rem 1.5rem 4rem;}
+  .page-title{font-size:22px;font-weight:600;margin-bottom:4px;}
+  .page-sub{font-size:14px;color:var(--text-muted);margin-bottom:1.5rem;}
+
+  /* Stats étoiles */
+  .stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:1.5rem;}
+  .stat-card{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;text-align:center;}
+  .stat-val{font-size:24px;font-weight:600;font-family:'IBM Plex Mono',monospace;color:var(--blue);}
+  .stat-stars{font-size:16px;margin:2px 0;}
+  .stat-lbl{font-size:11px;color:var(--text-muted);margin-top:2px;}
+
+  /* Résumé */
+  .summary-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.5rem;}
+  .sum-card{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;}
+  .sum-val{font-size:28px;font-weight:600;font-family:'IBM Plex Mono',monospace;}
+  .sum-lbl{font-size:12px;color:var(--text-muted);margin-top:2px;}
+
+  /* Toolbar */
+  .toolbar{display:flex;gap:10px;margin-bottom:1rem;flex-wrap:wrap;align-items:center;}
+  .search-input{flex:1;min-width:180px;height:36px;border:1px solid var(--border);border-radius:8px;padding:0 12px;font-size:14px;font-family:'IBM Plex Sans',sans-serif;background:var(--white);color:var(--text);}
+  .filter-select{height:36px;border:1px solid var(--border);border-radius:8px;padding:0 10px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;background:var(--white);color:var(--text);}
+  .btn{height:36px;padding:0 14px;border-radius:8px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--white);color:var(--text);white-space:nowrap;}
+  .btn:hover{opacity:.88;}
+  .btn-red{background:var(--red);color:white;border-color:var(--red);}
+
+  /* Table */
+  .table-wrap{background:var(--white);border:1px solid var(--border);border-radius:12px;overflow:auto;margin-bottom:1.5rem;}
+  table{width:100%;border-collapse:collapse;min-width:800px;}
+  thead{background:var(--bg);}
+  th{padding:10px 12px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);border-bottom:1px solid var(--border);}
+  td{padding:11px 12px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:middle;}
+  tr:last-child td{border-bottom:none;}
+  tr:hover td{background:#f8fafc;}
+  .stars-cell{font-size:15px;letter-spacing:1px;}
+  .prob-tag{display:inline-block;background:var(--red-light);color:var(--red);font-size:10px;padding:2px 6px;border-radius:4px;margin:1px;}
+  .prob-none{color:var(--green);font-size:12px;}
+  .detail-btn{background:var(--blue-light);color:var(--blue);border:none;border-radius:6px;padding:4px 10px;font-size:12px;font-family:'IBM Plex Sans',sans-serif;cursor:pointer;font-weight:500;}
+  .del-btn{background:var(--red-light);color:var(--red);border:none;border-radius:6px;padding:4px 8px;font-size:12px;font-family:'IBM Plex Sans',sans-serif;cursor:pointer;margin-left:4px;}
+  .empty-state{text-align:center;padding:3rem 2rem;color:var(--text-muted);}
+  .empty-state h3{font-size:16px;margin-bottom:8px;color:var(--text);}
+
+  /* Modal */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;overflow-y:auto;padding:2rem 1rem;}
+  .modal{background:var(--white);border-radius:14px;max-width:600px;margin:0 auto;}
+  .modal-header{padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+  .modal-header h2{font-size:17px;font-weight:600;}
+  .close-btn{background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-muted);}
+  .modal-body{padding:1.5rem;}
+  .detail-section{margin-bottom:1.25rem;}
+  .detail-section h3{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--border);}
+  .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
+  .info-item{font-size:13px;}
+  .info-item span{color:var(--text-muted);display:block;font-size:11px;margin-bottom:2px;}
+  .star-detail-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);font-size:13px;}
+  .star-detail-row:last-child{border-bottom:none;}
+  .comment-box{background:var(--bg);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--text);line-height:1.6;font-style:italic;}
+
+  @media(max-width:700px){
+    .stats-row{grid-template-columns:repeat(2,1fr);}
+    .summary-row{grid-template-columns:1fr 1fr;}
+    .container{padding:1rem 1rem 3rem;}
+  }
+</style>
+</head>
+<body>
+
+<!-- Mot de passe -->
+<div class="pwd-overlay" id="pwd-overlay">
+  <div class="pwd-card">
+    <div style="font-size:40px;margin-bottom:1rem;">🔐</div>
+    <h2>Espace Enseignant</h2>
+    <p>Entrez le mot de passe pour accéder aux évaluations.</p>
+    <input class="pwd-input" type="password" id="pwd-input" placeholder="••••••••"
+           onkeydown="if(event.key==='Enter') checkPassword()"/>
+    <button class="pwd-btn" onclick="checkPassword()">Accéder</button>
+    <div class="pwd-error" id="pwd-error">Mot de passe incorrect.</div>
+  </div>
+</div>
+
+<!-- Bandeau université -->
+<div class="univ-bar">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Badji_Mokhtar_Annaba_University_logo.svg/120px-Badji_Mokhtar_Annaba_University_logo.svg.png"
+       onerror="this.style.display='none'" alt="Logo UBMA"/>
+  <div class="univ-info">
+    <div class="u1">Badji Mokhtar Annaba University</div>
+    <div class="u2">Faculty of Technology</div>
+    <div class="u3">Techniques d'Expression et de Communication</div>
+    <div class="u4">Dr. N. E. A. DOGHMANE</div>
+  </div>
+</div>
+
+<header>
+  <span class="logo">TEC · ÉVALUATIONS ÉTUDIANTS</span>
+  <span class="badge">Accès enseignant</span>
+</header>
+
+<div class="container">
+  <div class="page-title">Évaluations post-examen</div>
+  <div class="page-sub">Résultats de l'enquête de satisfaction — Techniques d'Expression et de Communication</div>
+
+  <!-- Résumé général -->
+  <div class="summary-row">
+    <div class="sum-card"><div class="sum-val" id="sum-total">0</div><div class="sum-lbl">Évaluations reçues</div></div>
+    <div class="sum-card"><div class="sum-val" id="sum-global">—</div><div class="sum-lbl">Note globale moy. /5</div></div>
+    <div class="sum-card"><div class="sum-val" id="sum-diff">—</div><div class="sum-lbl">Difficulté moy. /5</div></div>
+    <div class="sum-card"><div class="sum-val" id="sum-prob">0</div><div class="sum-lbl">Étudiants avec problèmes</div></div>
+  </div>
+
+  <!-- Moyennes étoiles par critère -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-val" id="avg-global">—</div>
+      <div class="stat-stars" id="stars-global">☆☆☆☆☆</div>
+      <div class="stat-lbl">Note globale</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="avg-clarte">—</div>
+      <div class="stat-stars" id="stars-clarte">☆☆☆☆☆</div>
+      <div class="stat-lbl">Clarté questions</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="avg-adequation">—</div>
+      <div class="stat-stars" id="stars-adequation">☆☆☆☆☆</div>
+      <div class="stat-lbl">Adéquation cours</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="avg-duree">—</div>
+      <div class="stat-stars" id="stars-duree">☆☆☆☆☆</div>
+      <div class="stat-lbl">Durée examen</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="avg-interface">—</div>
+      <div class="stat-stars" id="stars-interface">☆☆☆☆☆</div>
+      <div class="stat-lbl">Interface numérique</div>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <input type="text" class="search-input" id="search" placeholder="Rechercher nom / matricule…" oninput="render()"/>
+    <select class="filter-select" id="filter-filiere" onchange="render()">
+      <option value="">Toutes les filières</option>
+      <option>AUTOMATIQUE</option><option>ELECTRONIQUE</option><option>TELECOMMUNICATION</option>
+      <option>ELECTROTECHNIQUE</option><option>ELECTROMECANIQUE</option><option>GENIE CIVIL</option>
+      <option>GENIE MECANIQUE</option><option>HYDRAULIQUE</option>
+      <option>HYGIENE ET SECURITE INDUSTRIELLE</option><option>GENIE DES PROCEDES</option><option>METALLURGIE</option>
+    </select>
+    <button class="btn" onclick="loadAndRender()">↻ Actualiser</button>
+    <button class="btn" onclick="exportCSV()">⬇ Exporter CSV</button>
+    <button class="btn btn-red" onclick="clearAll()">🗑 Vider</button>
+  </div>
+
+  <!-- Tableau -->
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Nom</th>
+          <th>Matricule</th>
+          <th>Filière</th>
+          <th>Groupe</th>
+          <th>Note ★</th>
+          <th>Diff.</th>
+          <th>Prépa.</th>
+          <th>Problèmes</th>
+          <th>Date</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="eval-body"></tbody>
+    </table>
+    <div class="empty-state" id="empty-state">
+      <h3>Aucune évaluation reçue</h3>
+      <p>Les évaluations apparaîtront ici dès que les étudiants soumettront le formulaire.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Modal détail -->
+<div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modal-title">Détail de l'évaluation</h2>
+      <button class="close-btn" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+const API_BASE = 'https://examen-jhpf.onrender.com';
+const PASSWORD = 'Ahlemyouya';
+let evals = [];
+
+// ── Mot de passe ────────────────────────────────────────────────────
+function checkPassword() {
+  const val = document.getElementById('pwd-input').value;
+  if (val === PASSWORD) {
+    document.getElementById('pwd-overlay').style.display = 'none';
+    loadAndRender();
+  } else {
+    const inp = document.getElementById('pwd-input');
+    inp.classList.add('error');
+    document.getElementById('pwd-error').style.display = 'block';
+    inp.value = '';
+    setTimeout(() => inp.classList.remove('error'), 400);
+  }
+}
+
+// ── Charger données ─────────────────────────────────────────────────
+async function loadAndRender() {
+  try {
+    const res = await fetch(API_BASE + '/api/evaluations');
+    evals = await res.json();
+  } catch(e) {
+    evals = [];
+  }
+  updateStats();
+  render();
+}
+
+// ── Statistiques ────────────────────────────────────────────────────
+function avg(arr) {
+  if (!arr.length) return null;
+  return (arr.reduce((a,b) => a+b, 0) / arr.length).toFixed(1);
+}
+
+function starsHtml(val) {
+  if (!val) return '☆☆☆☆☆';
+  const full = Math.round(val);
+  return '⭐'.repeat(full) + '☆'.repeat(5 - full);
+}
+
+function updateStats() {
+  const n = evals.length;
+  document.getElementById('sum-total').textContent = n;
+
+  const keys = ['global','clarte','adequation','duree','interface'];
+  keys.forEach(k => {
+    const vals = evals.map(e => e.stars?.[k]).filter(v => v > 0);
+    const a = avg(vals);
+    document.getElementById('avg-' + k).textContent = a ?? '—';
+    document.getElementById('stars-' + k).textContent = a ? starsHtml(parseFloat(a)) : '☆☆☆☆☆';
+  });
+
+  const globalVals = evals.map(e => e.stars?.global).filter(v => v > 0);
+  document.getElementById('sum-global').textContent = avg(globalVals) ?? '—';
+
+  const diffVals = evals.map(e => e.difficulte).filter(v => v > 0);
+  document.getElementById('sum-diff').textContent = avg(diffVals) ?? '—';
+
+  const withProb = evals.filter(e => e.problems?.length && !e.problems.includes('aucun')).length;
+  document.getElementById('sum-prob').textContent = withProb;
+}
+
+// ── Rendu tableau ───────────────────────────────────────────────────
+function render() {
+  const q       = document.getElementById('search').value.toLowerCase();
+  const filiere = document.getElementById('filter-filiere').value;
+
+  const filtered = evals.filter(e => {
+    const matchQ = !q || e.name?.toLowerCase().includes(q) || e.matricule?.toLowerCase().includes(q);
+    const matchF = !filiere || e.filiere === filiere;
+    return matchQ && matchF;
+  });
+
+  const tbody = document.getElementById('eval-body');
+  document.getElementById('empty-state').style.display = filtered.length ? 'none' : 'block';
+
+  tbody.innerHTML = filtered.map((e, i) => {
+    const globalStar = e.stars?.global || 0;
+    const stars = globalStar ? '⭐'.repeat(globalStar) + '☆'.repeat(5 - globalStar) : '—';
+    const probs = e.problems?.filter(p => p !== 'aucun') || [];
+    const probHtml = probs.length
+      ? probs.map(p => `<span class="prob-tag">${p}</span>`).join('')
+      : `<span class="prob-none">✓ Aucun</span>`;
+
+    return `<tr>
+      <td style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text-muted)">${i+1}</td>
+      <td style="font-weight:500">${e.name || '—'}</td>
+      <td style="font-family:'IBM Plex Mono',monospace;font-size:12px">${e.matricule || '—'}</td>
+      <td style="font-size:12px">${e.filiere || '—'}</td>
+      <td style="font-size:12px">${e.group || '—'}</td>
+      <td class="stars-cell" title="${globalStar}/5">${stars}</td>
+      <td style="font-family:'IBM Plex Mono',monospace;text-align:center">${e.difficulte || '—'}/5</td>
+      <td style="font-family:'IBM Plex Mono',monospace;text-align:center">${e.preparation || '—'}/5</td>
+      <td>${probHtml}</td>
+      <td style="font-size:12px;color:var(--text-muted)">${e.timestamp || '—'}</td>
+      <td>
+        <button class="detail-btn" onclick="showDetail(${evals.indexOf(e)})">Détail</button>
+        <button class="del-btn" onclick="deleteEval(${evals.indexOf(e)})">✕</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Détail modal ────────────────────────────────────────────────────
+function showDetail(idx) {
+  const e = evals[idx];
+  const starLabels = {
+    global: 'Note globale',
+    clarte: 'Clarté des questions',
+    adequation: 'Adéquation avec le cours',
+    duree: 'Durée de l\'examen',
+    interface: 'Interface numérique'
+  };
+  const starsRows = Object.entries(starLabels).map(([k, lbl]) => {
+    const v = e.stars?.[k] || 0;
+    return `<div class="star-detail-row">
+      <span>${lbl}</span>
+      <span>${v ? '⭐'.repeat(v) + '☆'.repeat(5-v) : '—'} <strong style="font-family:'IBM Plex Mono',monospace;font-size:12px"> ${v || '—'}/5</strong></span>
+    </div>`;
+  }).join('');
+
+  const probs = e.problems?.filter(p => p !== 'aucun') || [];
+  const probHtml = probs.length
+    ? probs.map(p => `<span class="prob-tag" style="font-size:12px;padding:3px 8px">${p}</span>`).join(' ')
+    : '<span style="color:var(--green);font-size:13px">✓ Aucun problème signalé</span>';
+
+  const commentaire = e.commentaire || e.commentaires?.bien || '';
+
+  document.getElementById('modal-title').textContent = `Évaluation — ${e.name || 'Étudiant'}`;
+  document.getElementById('modal-body').innerHTML = `
+    <div class="detail-section">
+      <h3>Informations étudiant</h3>
+      <div class="info-grid">
+        <div class="info-item"><span>Nom</span>${e.name || '—'}</div>
+        <div class="info-item"><span>Matricule</span>${e.matricule || '—'}</div>
+        <div class="info-item"><span>Filière</span>${e.filiere || '—'}</div>
+        <div class="info-item"><span>Groupe</span>${e.group || '—'}</div>
+        <div class="info-item"><span>Date</span>${e.timestamp || '—'}</div>
+      </div>
+    </div>
+    <div class="detail-section">
+      <h3>Évaluation en étoiles</h3>
+      ${starsRows}
+    </div>
+    <div class="detail-section">
+      <h3>Difficulté & Préparation</h3>
+      <div class="info-grid">
+        <div class="info-item"><span>Niveau de difficulté</span>${e.difficulte || '—'} / 5</div>
+        <div class="info-item"><span>Sentiment de préparation</span>${e.preparation || '—'} / 5</div>
+      </div>
+    </div>
+    <div class="detail-section">
+      <h3>Problèmes rencontrés</h3>
+      ${probHtml}
+    </div>
+    ${commentaire ? `<div class="detail-section">
+      <h3>Commentaire</h3>
+      <div class="comment-box">${commentaire}</div>
+    </div>` : ''}
+  `;
+  document.getElementById('modal').style.display = 'block';
+}
+
+function closeModal() {
+  document.getElementById('modal').style.display = 'none';
+}
+
+// ── Supprimer ────────────────────────────────────────────────────────
+async function deleteEval(idx) {
+  if (!confirm('Supprimer cette évaluation ?')) return;
+  const e = evals[idx];
+  try {
+    await fetch(API_BASE + '/api/evaluations/' + (e._id || e.id || idx), { method: 'DELETE' });
+  } catch(err) {}
+  evals.splice(idx, 1);
+  updateStats();
+  render();
+}
+
+async function clearAll() {
+  if (!confirm('Supprimer TOUTES les évaluations ? Cette action est irréversible.')) return;
+  try {
+    await fetch(API_BASE + '/api/evaluations', { method: 'DELETE' });
+  } catch(err) {}
+  evals = [];
+  updateStats();
+  render();
+}
+
+// ── Export CSV ───────────────────────────────────────────────────────
+function exportCSV() {
+  if (!evals.length) { alert('Aucune évaluation à exporter.'); return; }
+  const headers = ['Nom','Matricule','Filière','Groupe','★ Global','★ Clarté','★ Adéquation','★ Durée','★ Interface','Difficulté/5','Préparation/5','Problèmes','Commentaire','Date'];
+  const rows = evals.map(e => [
+    e.name, e.matricule, e.filiere, e.group,
+    e.stars?.global || '', e.stars?.clarte || '', e.stars?.adequation || '', e.stars?.duree || '', e.stars?.interface || '',
+    e.difficulte || '', e.preparation || '',
+    (e.problems || []).filter(p => p !== 'aucun').join(' | '),
+    (e.commentaire || '').replace(/,/g, ';'),
+    e.timestamp
+  ]);
+  const csv = [headers, ...rows].map(r => r.map(v => `"${v ?? ''}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,\uFEFF' + encodeURIComponent(csv);
+  a.download = 'evaluations_tec.csv';
+  a.click();
+}
+</script>
+</body>
+</html>
